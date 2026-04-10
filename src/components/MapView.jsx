@@ -22,8 +22,8 @@ const UserMarker = ({ position }) => {
     const icon = L.divIcon({
         className: 'user-marker',
         html: `<div class="relative w-4 h-4">
-                 <div class="absolute inset-0 bg-blue-500 rounded-full border-2 border-white shadow-md z-10"></div>
-                 <div class="absolute -inset-4 bg-blue-500/30 rounded-full animate-ping z-0"></div>
+                 <div class="absolute inset-0 bg-black rounded-full border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.16)] z-10"></div>
+                 <div class="absolute -inset-4 bg-black/20 rounded-full animate-ping z-0"></div>
                </div>`,
         iconSize: [16, 16],
         iconAnchor: [8, 8]
@@ -65,7 +65,7 @@ const MapView = ({ spots, userLocation, onFindMe }) => {
       <div className="absolute bottom-8 left-0 right-0 z-[1000] px-6 flex justify-center pointer-events-none">
         <button 
           onClick={onFindMe}
-          className="pointer-events-auto bg-primary hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 w-full max-w-xs"
+          className="pointer-events-auto bg-white text-black font-medium py-3.5 px-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.16)] translate-y-[2px] flex items-center justify-center gap-2 transition-colors hover:bg-[#f3f3f3] active:shadow-inner w-full max-w-sm"
         >
           <FaLocationArrow />
           Find Food Near Me

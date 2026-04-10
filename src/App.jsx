@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import MapView from './components/MapView'
 import { getSpots } from './services/spotService'
 import { isOpenNow } from './utils/timeUtils'
-import { FaFilter, FaTimes } from 'react-icons/fa'
+import { FaSearch, FaTimes } from 'react-icons/fa'
 import SplashScreen from './components/SplashScreen'
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
   const [filteredSpots, setFilteredSpots] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const loadSpots = async () => {
@@ -22,14 +22,24 @@ function App() {
     loadSpots();
   }, []);
 
+  useEffect(() => {
+    let next = spots;
+    if (activeFilter === 'Open Now') {
+      next = next.filter(spot => isOpenNow(spot.openHours, spot.daysOpen));
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      next = next.filter(spot =>
+        spot.name.toLowerCase().includes(q) ||
+        (spot.description && spot.description.toLowerCase().includes(q)) ||
+        (Array.isArray(spot.foodTypes) && spot.foodTypes.some(t => t.toLowerCase().includes(q)))
+      );
+    }
+    setFilteredSpots(next);
+  }, [spots, activeFilter, searchQuery]);
+
   const handleFilter = (filter) => {
     setActiveFilter(filter);
-    setIsFilterMenuOpen(false); // Close menu on selection
-    if (filter === 'All') {
-      setFilteredSpots(spots);
-    } else if (filter === 'Open Now') {
-      setFilteredSpots(spots.filter(spot => isOpenNow(spot.openHours, spot.daysOpen)));
-    }
   };
 
   const handleFindMe = () => {
@@ -52,44 +62,46 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-full relative overflow-hidden bg-gray-50">
+    <div className="h-screen w-full relative overflow-hidden bg-white">
       {loading && <SplashScreen onFinish={() => setLoading(false)} />}
       
-      {/* Filter Button & Menu */}
-      <div className="absolute top-4 right-4 z-[1000] flex flex-col items-end gap-2">
-        <button
-          onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-          className="bg-white/90 backdrop-blur-md text-gray-800 px-5 py-3 rounded-2xl shadow-lg border border-white/50 flex items-center gap-2.5 font-bold transition-all active:scale-95 hover:bg-white hover:shadow-xl"
-        >
-          <div className={`p-1.5 rounded-full ${isFilterMenuOpen ? 'bg-red-50 text-red-500' : (activeFilter !== 'All' ? 'bg-secondary/10 text-secondary' : 'bg-gray-100 text-gray-600')}`}>
-            {isFilterMenuOpen ? <FaTimes size={14} /> : <FaFilter size={14} />}
-          </div>
-          <span className="text-sm tracking-wide">
-            {isFilterMenuOpen ? 'Close' : (activeFilter === 'All' ? 'Filter Spots' : activeFilter)}
-          </span>
-        </button>
-
-        {isFilterMenuOpen && (
-          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden flex flex-col w-56 animate-fade-in-up origin-top-right">
-            <div className="px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
-              Filter by
-            </div>
-            {['All', 'Open Now'].map(filter => (
+      <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="w-full sm:max-w-[420px]">
+          <div className="relative">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={14} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search food spots"
+              className="w-full pl-9 pr-10 py-3 rounded-lg bg-white border border-black text-sm text-black placeholder:text-muted focus:outline-none"
+            />
+            {searchQuery.trim() && (
               <button
-                key={filter}
-                onClick={() => handleFilter(filter)}
-                className={`text-left px-4 py-3.5 text-sm font-medium transition-all border-b border-gray-50 last:border-0 flex justify-between items-center group ${
-                  activeFilter === filter ? 'text-secondary bg-orange-50/50' : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-chip text-black flex items-center justify-center active:shadow-inner"
               >
-                <span>{filter}</span>
-                {activeFilter === filter && (
-                  <span className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span>
-                )}
+                <FaTimes size={12} />
               </button>
-            ))}
+            )}
           </div>
-        )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {['All', 'Open Now'].map(filter => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => handleFilter(filter)}
+              className={`px-4 py-3 rounded-full text-sm font-medium transition-colors active:shadow-inner ${
+                activeFilter === filter ? 'bg-black text-white' : 'bg-chip text-black hover:bg-hover'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
       </div>
 
       <MapView 

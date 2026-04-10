@@ -21,24 +21,23 @@ const SplashScreen = ({ onFinish }) => {
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
-      <div className="relative mb-6">
-        <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
-        <div className="relative w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-2xl z-10">
+      <div className="relative mb-7">
+        <div className="relative w-24 h-24 bg-black rounded-xl flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
           <FaUtensils className="text-white text-4xl" />
         </div>
       </div>
       
-      <h1 className="text-3xl font-bold text-gray-800 tracking-tight mb-2 animate-fade-in-up">
-        CU <span className="text-primary">Foods</span>
+      <h1 className="text-3xl font-bold text-black tracking-tight mb-2 animate-fade-in-up">
+        CU Foods
       </h1>
       
-      <p className="text-gray-500 text-sm font-medium tracking-wide animate-pulse">
+      <p className="text-body text-sm font-medium tracking-wide animate-pulse">
         Central University
       </p>
 
-      <div className="absolute bottom-10 flex flex-col items-center gap-2">
-         <div className="w-12 h-1 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-secondary w-full animate-[loading_1.5s_ease-in-out_infinite] origin-left"></div>
+      <div className="absolute bottom-12 flex flex-col items-center gap-2">
+         <div className="w-24 h-1.5 bg-chip rounded-full overflow-hidden">
+            <div className="h-full bg-black w-full animate-[loading_1.5s_ease-in-out_infinite] origin-left rounded-full"></div>
          </div>
       </div>
       
