@@ -86,7 +86,8 @@ function AdminPortal() {
 
   useEffect(() => {
     if (needsFirebaseLogin && !auth.currentUser) return
-    if (needsFirebaseLogin && adminUids.length > 0 && !adminUids.includes(auth.currentUser.uid)) return
+    if (needsFirebaseLogin && adminUids.length === 0) return
+    if (needsFirebaseLogin && !adminUids.includes(auth.currentUser.uid)) return
     load()
   }, [needsFirebaseLogin, authUser, adminUids.join(',')])
 
@@ -212,7 +213,58 @@ function AdminPortal() {
     )
   }
 
-  if (adminUids.length > 0 && !adminUids.includes(authUser.uid)) {
+  if (adminUids.length === 0) {
+    return (
+      <div className="h-screen w-full bg-white text-black flex flex-col">
+        <div className="border-b border-black/10 px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => { window.location.hash = '' }}
+              className="h-10 w-10 rounded-full bg-chip text-black flex items-center justify-center hover:bg-hover active:shadow-inner"
+              aria-label="Back to map"
+            >
+              <FaArrowLeft size={14} />
+            </button>
+            <div className="min-w-0">
+              <div className="font-semibold leading-tight truncate">Admin Portal</div>
+              <div className="text-xs text-body leading-tight truncate">Not configured</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-md border border-black/10 rounded-2xl p-5">
+            <div className="font-semibold">Admin allowlist is not set</div>
+            <div className="text-sm text-body mt-1">
+              Set VITE_ADMIN_UIDS to your UID and redeploy.
+            </div>
+            <div className="mt-3 text-sm text-body break-all">
+              Your UID: {authUser.uid}
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => navigator.clipboard?.writeText(authUser.uid)}
+                className="h-11 px-5 rounded-full bg-chip text-black font-medium hover:bg-hover active:shadow-inner"
+              >
+                Copy UID
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="h-11 px-5 rounded-full bg-black text-white font-medium hover:bg-[#111111] active:shadow-inner"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!adminUids.includes(authUser.uid)) {
     return (
       <div className="h-screen w-full bg-white text-black flex flex-col">
         <div className="border-b border-black/10 px-4 py-3 flex items-center justify-between gap-3">
