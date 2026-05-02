@@ -4,8 +4,6 @@ import { FaArrowLeft, FaPlus, FaRedo, FaSearch, FaTrash, FaEdit } from 'react-ic
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 
-const ADMIN_SESSION_KEY = 'cu_foods_admin_ok_v1'
-
 const emptyDraft = {
   id: null,
   name: '',
@@ -48,10 +46,6 @@ const toSpotInput = (draft) => ({
 })
 
 function AdminPortal() {
-  const adminPasscode = import.meta.env.VITE_ADMIN_PASSCODE
-  const [authorized, setAuthorized] = useState(() => sessionStorage.getItem(ADMIN_SESSION_KEY) === '1')
-  const [passcode, setPasscode] = useState('')
-  const [accessError, setAccessError] = useState('')
   const [authUser, setAuthUser] = useState(() => auth.currentUser)
   const [authError, setAuthError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -64,6 +58,10 @@ function AdminPortal() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const firebaseInfo = getFirebaseConfigInfo()
   const needsFirebaseLogin = firebaseInfo.configured
+  const adminUids = (import.meta.env.VITE_ADMIN_UIDS || import.meta.env.VITE_ADMIN_UID || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
 
   const load = async () => {
     setError('')
@@ -80,18 +78,17 @@ function AdminPortal() {
   }
 
   useEffect(() => {
-    if (!authorized) return
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setAuthUser(user)
     })
     return unsubscribe
-  }, [authorized])
+  }, [])
 
   useEffect(() => {
-    if (!authorized) return
     if (needsFirebaseLogin && !auth.currentUser) return
+    if (needsFirebaseLogin && adminUids.length > 0 && !adminUids.includes(auth.currentUser.uid)) return
     load()
-  }, [authorized, needsFirebaseLogin, authUser])
+  }, [needsFirebaseLogin, authUser, adminUids.join(',')])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -104,26 +101,7 @@ function AdminPortal() {
     })
   }, [spots, query])
 
-  const handleUnlock = () => {
-    if (!adminPasscode || `${adminPasscode}`.trim() === '') {
-      setAccessError('Admin portal is locked. Set VITE_ADMIN_PASSCODE to enable access.')
-      return
-    }
-    if (passcode !== `${adminPasscode}`) {
-      setAccessError('Incorrect passcode.')
-      return
-    }
-    sessionStorage.setItem(ADMIN_SESSION_KEY, '1')
-    setAuthorized(true)
-    setAccessError('')
-    setPasscode('')
-  }
-
   const handleLogout = () => {
-    sessionStorage.removeItem(ADMIN_SESSION_KEY)
-    setAuthorized(false)
-    setPasscode('')
-    setAccessError('')
     setAuthError('')
     signOut(auth).catch(() => {})
     window.location.hash = ''
@@ -150,7 +128,7 @@ function AdminPortal() {
     }
   }
 
-  if (!authorized) {
+  if (!needsFirebaseLogin) {
     return (
       <div className="h-screen w-full bg-white text-black flex flex-col">
         <div className="border-b border-black/10 px-4 py-3 flex items-center justify-between gap-3">
@@ -165,36 +143,18 @@ function AdminPortal() {
             </button>
             <div className="min-w-0">
               <div className="font-semibold leading-tight truncate">Admin Portal</div>
-              <div className="text-xs text-body leading-tight truncate">Access required</div>
+              <div className="text-xs text-body leading-tight truncate">Firebase required</div>
             </div>
           </div>
         </div>
 
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-md border border-black/10 rounded-2xl p-5">
-            <div className="font-semibold">Enter passcode</div>
-            <div className="text-sm text-body mt-1">
-              Admin access is disabled unless a passcode is configured.
-            </div>
-            <div className="mt-4 flex gap-2">
-              <input
-                type="password"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                className="flex-1 px-3 py-3 rounded-lg border border-black text-sm focus:outline-none"
-                placeholder="Passcode"
-              />
-              <button
-                type="button"
-                onClick={handleUnlock}
-                className="h-11 px-5 rounded-full bg-black text-white font-medium hover:bg-[#111111] active:shadow-inner"
-              >
-                Unlock
-              </button>
-            </div>
-            {accessError && (
+            <div className="font-semibold">Admin portal is disabled</div>
+            <div className="text-sm text-body mt-1">Firebase configuration is required.</div>
+            {firebaseInfo.missingEnv.length > 0 && (
               <div className="mt-3 text-sm text-white bg-black px-4 py-3 rounded-lg">
-                {accessError}
+                Missing: {firebaseInfo.missingEnv.join(', ')}
               </div>
             )}
           </div>
@@ -203,7 +163,7 @@ function AdminPortal() {
     )
   }
 
-  if (needsFirebaseLogin && !authUser) {
+  if (!authUser) {
     return (
       <div className="h-screen w-full bg-white text-black flex flex-col">
         <div className="border-b border-black/10 px-4 py-3 flex items-center justify-between gap-3">
@@ -246,6 +206,47 @@ function AdminPortal() {
                 {authError}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (adminUids.length > 0 && !adminUids.includes(authUser.uid)) {
+    return (
+      <div className="h-screen w-full bg-white text-black flex flex-col">
+        <div className="border-b border-black/10 px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => { window.location.hash = '' }}
+              className="h-10 w-10 rounded-full bg-chip text-black flex items-center justify-center hover:bg-hover active:shadow-inner"
+              aria-label="Back to map"
+            >
+              <FaArrowLeft size={14} />
+            </button>
+            <div className="min-w-0">
+              <div className="font-semibold leading-tight truncate">Admin Portal</div>
+              <div className="text-xs text-body leading-tight truncate">Access denied</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-md border border-black/10 rounded-2xl p-5">
+            <div className="font-semibold">This account is not an admin</div>
+            <div className="text-sm text-body mt-1">
+              Signed in: {authUser.email ? `${authUser.email} • ${authUser.uid}` : authUser.uid}
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="h-11 px-5 rounded-full bg-black text-white font-medium hover:bg-[#111111] active:shadow-inner"
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
       </div>
