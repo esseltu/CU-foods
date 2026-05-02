@@ -6,7 +6,8 @@ import { isOpenNow } from '../utils/timeUtils';
 
 // Function to get emoji based on types
 const getSpotIcon = (spot) => {
-    const type = spot.foodTypes[0] || "";
+    const types = Array.isArray(spot.foodTypes) ? spot.foodTypes : [];
+    const type = types[0] || "";
     if (type.includes("Coffee") || type.includes("Pastry")) return "☕";
     if (type.includes("Pizza") || type.includes("Burger")) return "🍕";
     return "🍛"; // Generic food
@@ -14,6 +15,7 @@ const getSpotIcon = (spot) => {
 
 const FoodMarker = ({ spot, userLocation }) => {
   const emoji = getSpotIcon(spot);
+  const foodTypes = Array.isArray(spot.foodTypes) ? spot.foodTypes : [];
 
   const isSpotOpen = isOpenNow(spot.openHours, spot.daysOpen);
   
@@ -79,13 +81,13 @@ const FoodMarker = ({ spot, userLocation }) => {
             <p className="text-sm text-body leading-snug line-clamp-2 mb-4">{spot.description}</p>
             
             <div className="flex flex-wrap gap-2 mb-4">
-              {spot.foodTypes.slice(0, 3).map((food, idx) => (
+              {foodTypes.slice(0, 3).map((food, idx) => (
                 <span key={idx} className="text-xs font-medium bg-chip text-black px-3 py-1 rounded-full">
                   {food}
                 </span>
               ))}
-              {spot.foodTypes.length > 3 && (
-                <span className="text-xs font-medium bg-chip text-black px-3 py-1 rounded-full">+{spot.foodTypes.length - 3}</span>
+              {foodTypes.length > 3 && (
+                <span className="text-xs font-medium bg-chip text-black px-3 py-1 rounded-full">+{foodTypes.length - 3}</span>
               )}
             </div>
             

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import MapView from './components/MapView'
+import AdminPortal from './components/AdminPortal'
 import { getSpots } from './services/spotService'
 import { isOpenNow } from './utils/timeUtils'
 import { FaSearch, FaTimes } from 'react-icons/fa'
@@ -12,6 +13,7 @@ function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [hash, setHash] = useState(() => window.location.hash);
 
   useEffect(() => {
     const loadSpots = async () => {
@@ -20,6 +22,12 @@ function App() {
       setFilteredSpots(data);
     };
     loadSpots();
+  }, []);
+
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
   useEffect(() => {
@@ -60,6 +68,12 @@ function App() {
           alert("Geolocation is not supported by your browser.");
       }
   };
+
+  const isAdmin = /^#\/?admin\/?$/i.test(hash || '');
+
+  if (isAdmin) {
+    return <AdminPortal />
+  }
 
   return (
     <div className="h-screen w-full relative overflow-hidden bg-white">
