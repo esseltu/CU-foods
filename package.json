@@ -3,18 +3,16 @@
   "private": true,
   "version": "0.1.8",
   "type": "module",
-  "homepage": "https://esseltu.github.io/CU-foods",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -f"
+    "deploy": "firebase deploy --only hosting"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.23",
-    "gh-pages": "^6.3.0",
+    "firebase-tools": "^14.16.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.9.3",
