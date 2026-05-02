@@ -287,9 +287,6 @@ function AdminPortal() {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-md border border-black/10 rounded-2xl p-5">
             <div className="font-semibold">This account is not an admin</div>
-            <div className="text-sm text-body mt-1">
-              Signed in: {authUser.email ? `${authUser.email} • ${authUser.uid}` : authUser.uid}
-            </div>
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
@@ -392,14 +389,6 @@ function AdminPortal() {
           </button>
           <div className="min-w-0">
             <div className="font-semibold leading-tight truncate">Admin Portal</div>
-            <div className="text-xs text-body leading-tight truncate">
-              Data source: {source === 'firebase' ? 'Firebase' : source === 'local' ? 'Local (this browser)' : 'Mock'}
-            </div>
-            {authUser && (
-              <div className="text-xs text-body leading-tight truncate">
-                Signed in: {authUser.email ? `${authUser.email} • ${authUser.uid}` : authUser.uid}
-              </div>
-            )}
             {source !== 'firebase' && firebaseInfo.missingEnv.length > 0 && (
               <div className="text-xs text-body leading-tight truncate">
                 Firebase missing: {firebaseInfo.missingEnv.join(', ')}
